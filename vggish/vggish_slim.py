@@ -48,7 +48,7 @@ def define_vggish_slim(training=False):
   num_frames time frames (where each frame step is usually 10ms). This is
   produced by computing the stabilized log(mel-spectrogram + params.LOG_OFFSET).
   The output is an op named 'vggish/embedding' which produces the activations of
-  a 128-D embedding layer, which is usually the penultimate layer when used as
+  a 128-D embedding layer, which is usually the penultimate(倒数第二) layer when used as
   part of a full model with a final classifier layer.
 
   Args:
@@ -65,7 +65,7 @@ def define_vggish_slim(training=False):
   # - All max-pools are 2x2 with stride 2 and SAME padding.
   with slim.arg_scope([slim.conv2d, slim.fully_connected],
                       weights_initializer=tf.truncated_normal_initializer(
-                          stddev=params.INIT_STDDEV),
+                          stddev=params.INIT_STDDEV), # 0.01
                       biases_initializer=tf.zeros_initializer(),
                       activation_fn=tf.nn.relu,
                       trainable=training), \
@@ -95,8 +95,8 @@ def define_vggish_slim(training=False):
     net = slim.flatten(net)
     net = slim.repeat(net, 2, slim.fully_connected, 4096, scope='fc1')
     # The embedding layer.
-    net = slim.fully_connected(net, params.EMBEDDING_SIZE, scope='fc2')
-    return tf.identity(net, name='embedding')
+    net = slim.fully_connected(net, params.EMBEDDING_SIZE, scope='fc2')  # EMBEDDING_SIZE:128
+    return tf.identity(net, name='embedding')  # y = tf.identity(x)是一个op操作表示将x的值赋予y
 
 
 def load_vggish_slim_checkpoint(session, checkpoint_path):
