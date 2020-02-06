@@ -161,3 +161,4 @@ def load_defined_vggish_slim_checkpoint(session, checkpoint_path):
   saver = tf.train.Saver(vggish_vars, name='vggish_load_pretrained',
                          write_version=1)
   saver.restore(session, checkpoint_path)
+  
