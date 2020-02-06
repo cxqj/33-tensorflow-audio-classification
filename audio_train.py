@@ -30,24 +30,24 @@ flags = tf.app.flags
 
 flags.DEFINE_string(
     'vggish_ckpt_dir', params.VGGISH_CHECKPOINT_DIR,
-    'Path to the VGGish checkpoint file.')
+    'Path to the VGGish checkpoint file.')  # ./data/vggish
 
 flags.DEFINE_string(
     'audio_ckpt_dir', params.AUDIO_CHECKPOINT_DIR,
-    'Path to the audio checkpoint file.')
+    'Path to the audio checkpoint file.')  # ./data/train
 
 flags.DEFINE_string(
     'train_name', params.AUDIO_TRAIN_NAME,
     'Directory name for audio checkpoint file to save, i.e. audio checkpoint'
-    'file will save to `audio_ckpt_dir/train_name`.')
+    'file will save to `audio_ckpt_dir/train_name`.') # urban_sound_train
 
 flags.DEFINE_string(
     'wavfile_parent_dir', params.WAV_FILE_PARENT_DIR,
-    "Path to wav file's parent directory, each subdirectory is a class of files.")
+    "Path to wav file's parent directory, each subdirectory is a class of files.") # /data1/data/UrbanSound8K-16bit/audio-classfied
 
 flags.DEFINE_string(
     'records_dir', params.TF_RECORDS_DIR,
-    "Path to the TF records file's parent directory.")
+    "Path to the TF records file's parent directory.") # ./data/records
 
 flags.DEFINE_bool(
     'restore_if_possible', True,
@@ -85,7 +85,7 @@ util.maybe_create_directory(audio_ckpt_dir)
 
 def _add_triaining_graph():
     with tf.Graph().as_default() as graph:
-        logits = define_audio_slim(training=True)
+        logits = define_audio_slim(training=True)  # 分类层
         tf.summary.histogram('logits', logits)
         # define training subgraph
         with tf.variable_scope('train'):
