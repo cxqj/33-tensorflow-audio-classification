@@ -91,32 +91,32 @@ def _get_examples_batch():
     [batch_size, num_classes] where each row is a multi-hot label vector that
     provides the labels for corresponding rows in features.
   """
-  # Make a waveform for each class.
+  # Make a waveform for each class. 为每个类制作一个波形。
   num_seconds = 5
   sr = 44100  # Sampling rate.
-  t = np.linspace(0, num_seconds, int(num_seconds * sr))  # Time axis.
-  # Random sine wave.
+  t = np.linspace(0, num_seconds, int(num_seconds * sr))  # Time axis. (220500)
+  # Random sine wave. 正弦信号
   freq = np.random.uniform(100, 1000)
-  sine = np.sin(2 * np.pi * freq * t)
-  # Random constant signal.
-  magnitude = np.random.uniform(-1, 1)
+  sine = np.sin(2 * np.pi * freq * t)  # (220500)
+  # Random constant signal. 常量信号
+  magnitude = np.random.uniform(-1, 1)  # 强度
   const = magnitude * t
-  # White noise.
+  # White noise. 白噪声
   noise = np.random.normal(-1, 1, size=t.shape)
 
   # Make examples of each signal and corresponding labels.
   # Sine is class index 0, Const class index 1, Noise class index 2.
-  sine_examples = vggish_input.waveform_to_examples(sine, sr)
-  sine_labels = np.array([[1, 0, 0]] * sine_examples.shape[0])
-  const_examples = vggish_input.waveform_to_examples(const, sr)
-  const_labels = np.array([[0, 1, 0]] * const_examples.shape[0])
-  noise_examples = vggish_input.waveform_to_examples(noise, sr)
-  noise_labels = np.array([[0, 0, 1]] * noise_examples.shape[0])
+  sine_examples = vggish_input.waveform_to_examples(sine, sr)    #(5,94,64)  
+  sine_labels = np.array([[1, 0, 0]] * sine_examples.shape[0])   #(5,3)
+  const_examples = vggish_input.waveform_to_examples(const, sr)  #(5,94,64)
+  const_labels = np.array([[0, 1, 0]] * const_examples.shape[0]) #(5,3)
+  noise_examples = vggish_input.waveform_to_examples(noise, sr)  #(5,94,64)
+  noise_labels = np.array([[0, 0, 1]] * noise_examples.shape[0]) #(5,3)
 
   # Shuffle (example, label) pairs across all classes.
-  all_examples = np.concatenate((sine_examples, const_examples, noise_examples))
+  all_examples = np.concatenate((sine_examples, const_examples, noise_examples)) #(15,96,64)
   print('all_examples shape:', all_examples.shape)
-  all_labels = np.concatenate((sine_labels, const_labels, noise_labels))
+  all_labels = np.concatenate((sine_labels, const_labels, noise_labels)) #(15,3)
   print('all_labels shape:', all_labels.shape)
   labeled_examples = list(zip(all_examples, all_labels))
   shuffle(labeled_examples)
@@ -137,12 +137,12 @@ def main(_):
     with tf.variable_scope('mymodel'):
       # Add a fully connected layer with 100 units.
       num_units = 100
-      fc = slim.fully_connected(embeddings, num_units)
+      fc = slim.fully_connected(embeddings, num_units)  # 128-->100
 
       # Add a classifier layer at the end, consisting of parallel logistic
       # classifiers, one per class. This allows for multi-class tasks.
       logits = slim.fully_connected(
-          fc, _NUM_CLASSES, activation_fn=None, scope='logits')
+          fc, _NUM_CLASSES, activation_fn=None, scope='logits') #(100,3)
       tf.sigmoid(logits, name='prediction')
 
       # Add training ops.
@@ -179,7 +179,7 @@ def main(_):
         vggish_params.INPUT_TENSOR_NAME)
     labels_tensor = sess.graph.get_tensor_by_name('mymodel/train/labels:0')
     global_step_tensor = sess.graph.get_tensor_by_name(
-        'mymodel/train/global_step:0')
+        'mymodel/train/global_step:0')  # 保存当前运行到第几步
     loss_tensor = sess.graph.get_tensor_by_name('mymodel/train/loss_op:0')
     train_op = sess.graph.get_operation_by_name('mymodel/train/train_op')
 
