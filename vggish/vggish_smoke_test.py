@@ -56,7 +56,7 @@ sr = 44100
 t = np.linspace(0, num_secs, int(num_secs * sr))
 x = np.sin(2 * np.pi * freq * t)
 
-# Produce a batch of log mel spectrogram examples.
+# Produce a batch of log mel spectrogram(梅尔频谱) examples.
 input_batch = vggish_input.waveform_to_examples(x, sr)
 
 print(input_batch, input_batch.shape, type(input_batch))
@@ -75,15 +75,17 @@ with tf.Graph().as_default(), tf.Session() as sess:
   vggish_slim.load_vggish_slim_checkpoint(sess, checkpoint_path)
 
   features_tensor = sess.graph.get_tensor_by_name(
-      vggish_params.INPUT_TENSOR_NAME)
+      vggish_params.INPUT_TENSOR_NAME)  # 'vggish/input_features:0'
   embedding_tensor = sess.graph.get_tensor_by_name(
-      vggish_params.OUTPUT_TENSOR_NAME)
+      vggish_params.OUTPUT_TENSOR_NAME) # 'vggish/embedding:0'
   [embedding_batch] = sess.run([embedding_tensor],
                                feed_dict={features_tensor: input_batch})
   print('VGGish embedding: ', embedding_batch[0])
   print('VGGish embedding shape: ', embedding_batch.shape)
   expected_embedding_mean = 0.131
   expected_embedding_std = 0.238
+  
+  # 如果两个对象的近似程度超出了指定的容差限，就抛出异常
   np.testing.assert_allclose(
       [np.mean(embedding_batch), np.std(embedding_batch)],
       [expected_embedding_mean, expected_embedding_std],
