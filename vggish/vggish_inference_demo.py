@@ -91,11 +91,11 @@ def main(_):
     t = np.linspace(0, num_secs, int(num_secs * sr))
     x = np.sin(2 * np.pi * freq * t)
     # Convert to signed 16-bit samples.
-    samples = np.clip(x * 32768, -32768, 32767).astype(np.int16)
-    wav_file = six.BytesIO()
-    wavfile.write(wav_file, sr, samples)
-    wav_file.seek(0)
-  examples_batch = vggish_input.wavfile_to_examples(wav_file)
+    samples = np.clip(x * 32768, -32768, 32767).astype(np.int16) # 截取函数，超出的部分就把它强置为边界部分。
+    wav_file = six.BytesIO()  # BytesIO实现了在内存中读写bytes，我们创建一个BytesIO，然后写入一些bytes：
+    wavfile.write(wav_file, sr, samples) # 构造wav文件
+    wav_file.seek(0) # 实现对文件指针的移动，文件对象提供了 tell() 函数和 seek() 函数。tell() 函数用于判断文件指针当前所处的位置，而 seek() 函数用于移动文件指针到文件的指定位置。
+  examples_batch = vggish_input.wavfile_to_examples(wav_file) #(4,96,64)-->[num_examples, num_frames, num_bands]
   print(examples_batch, examples_batch.shape)
 
   # Prepare a postprocessor to munge the model embeddings.
@@ -117,9 +117,9 @@ def main(_):
 
     # Run inference and postprocessing.
     [embedding_batch] = sess.run([embedding_tensor],
-                                 feed_dict={features_tensor: examples_batch})
+                                 feed_dict={features_tensor: examples_batch})  # (4,96,64)-->(4,128)
     print(embedding_batch)
-    postprocessed_batch = pproc.postprocess(embedding_batch)
+    postprocessed_batch = pproc.postprocess(embedding_batch)  #(4,128)
     print(postprocessed_batch, postprocessed_batch.shape)
 
     # Write the postprocessed embeddings as a SequenceExample, in a similar
