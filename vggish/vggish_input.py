@@ -40,7 +40,7 @@ def waveform_to_examples(data, sample_rate): # data:(220500)  samplerate: 44140
     spectrogram(梅尔频谱), covering num_frames frames of audio and num_bands mel frequency
     bands, where the frame length is vggish_params.STFT_HOP_LENGTH_SECONDS.
   """
-  # Convert to mono.
+  # Convert to mono. 如果为多声道转为单声道
   if len(data.shape) > 1:
     data = np.mean(data, axis=1)
   # Resample to the rate assumed by VGGish.
@@ -68,7 +68,7 @@ def waveform_to_examples(data, sample_rate): # data:(220500)  samplerate: 44140
       log_mel,
       window_length=example_window_length,
       hop_length=example_hop_length)
-  return log_mel_examples  # (5,96,64)  [num_examples, num_frames, num_bands]
+  return log_mel_examples  # (5,96,64)--> [num_examples, num_frames, num_bands]
 
 
 def wavfile_to_examples(wav_file):
@@ -81,7 +81,8 @@ def wavfile_to_examples(wav_file):
   Returns:
     See waveform_to_examples.
   """
-  sr, wav_data = wavfile.read(wav_file)
+  # sr为采样率
+  sr, wav_data = wavfile.read(wav_file)  # sr:44100  wav_data:(172216,2)
   assert wav_data.dtype == np.int16, 'Bad sample type: %r' % wav_data.dtype
   samples = wav_data / 32768.0  # Convert to [-1.0, +1.0]
   return waveform_to_examples(samples, sr)
