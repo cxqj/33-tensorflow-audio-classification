@@ -25,8 +25,8 @@ class Postprocessor(object):
 
   The initial release of AudioSet included 128-D VGGish embeddings for each
   segment of AudioSet. These released embeddings were produced by applying
-  a PCA transformation (technically, a whitening transform is included as well)
-  and 8-bit quantization to the raw embedding output from VGGish, in order to
+  a PCA transformation (technically, a whitening transform(白化变换) is included as well)
+  and 8-bit quantization(8位量化) to the raw embedding output from VGGish, in order to
   stay compatible with the YouTube-8M project which provides visual embeddings
   in the same format for a large set of YouTube videos. This class implements
   the same PCA (with whitening) and quantization transformations.
@@ -49,7 +49,7 @@ class Postprocessor(object):
     assert self._pca_means.shape == (vggish_params.EMBEDDING_SIZE, 1), (
         'Bad PCA means shape: %r' % (self._pca_means.shape,))
 
-  def postprocess(self, embeddings_batch):
+  def postprocess(self, embeddings_batch):  # (4,128) 对得到的特征进行PCA降维和8位量化
     """Applies postprocessing to a batch of embeddings.
 
     Args:
@@ -73,13 +73,13 @@ class Postprocessor(object):
     #   where both are are equal to embedding_size in our case.
     # - Transpose result back to [batch_size, embedding_size].
     pca_applied = np.dot(self._pca_matrix,
-                         (embeddings_batch.T - self._pca_means)).T
+                         (embeddings_batch.T - self._pca_means)).T  #(4,128)
 
     # Quantize by:
     # - clipping to [min, max] range
     clipped_embeddings = np.clip(
         pca_applied, vggish_params.QUANTIZE_MIN_VAL,
-        vggish_params.QUANTIZE_MAX_VAL)
+        vggish_params.QUANTIZE_MAX_VAL)  #[-2.0,+2.0]
     # - convert to 8-bit in range [0.0, 255.0]
     quantized_embeddings = (
         (clipped_embeddings - vggish_params.QUANTIZE_MIN_VAL) *
