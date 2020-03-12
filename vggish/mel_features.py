@@ -30,19 +30,19 @@ def frame(data, window_length, hop_length):
   end are not included.
 
   Args:
-    data: np.array of dimension N >= 1.
-    window_length: Number of samples in each frame.
-    hop_length: Advance (in samples) between each window.
+    data: np.array of dimension N >= 1. 80000
+    window_length: Number of samples in each frame. 400
+    hop_length: Advance (in samples) between each window. 160
 
   Returns:
     (N+1)-D np.array with as many rows as there are complete frames that can be
     extracted.
   """
-  num_samples = data.shape[0]
-  num_frames = 1 + int(np.floor((num_samples - window_length) / hop_length))
-  shape = (num_frames, window_length) + data.shape[1:]
-  strides = (data.strides[0] * hop_length,) + data.strides
-  return np.lib.stride_tricks.as_strided(data, shape=shape, strides=strides)
+  num_samples = data.shape[0]  #80000 
+  num_frames = 1 + int(np.floor((num_samples - window_length) / hop_length))  #498
+  shape = (num_frames, window_length) + data.shape[1:]   #(498,400)
+  strides = (data.strides[0] * hop_length,) + data.strides  #(1280,8)
+  return np.lib.stride_tricks.as_strided(data, shape=shape, strides=strides)  #(498,400) 按shape的形状对一个矩阵进行切块
 
 
 def periodic_hann(window_length):
@@ -74,22 +74,22 @@ def stft_magnitude(signal, fft_length,
   """Calculate the short-time Fourier transform magnitude.
 
   Args:
-    signal: 1D np.array of the input time-domain signal.
-    fft_length: Size of the FFT to apply.
-    hop_length: Advance (in samples) between each frame passed to FFT.
-    window_length: Length of each block of samples to pass to FFT.
+    signal: 1D np.array of the input time-domain signal. 80000
+    fft_length: Size of the FFT to apply.   512
+    hop_length: Advance (in samples) between each frame passed to FFT.  160
+    window_length: Length of each block of samples to pass to FFT. 400
 
   Returns:
     2D np.array where each row contains the magnitudes of the fft_length/2+1
     unique values of the FFT for the corresponding frame of input samples.
   """
-  frames = frame(signal, window_length, hop_length)
+  frames = frame(signal, window_length, hop_length)  #(498,400)
   # Apply frame window to each frame. We use a periodic Hann (cosine of period
   # window_length) instead of the symmetric Hann of np.hanning (period
   # window_length-1).
-  window = periodic_hann(window_length)
-  windowed_frames = frames * window
-  return np.abs(np.fft.rfft(windowed_frames, int(fft_length)))
+  window = periodic_hann(window_length)  #(400,)
+  windowed_frames = frames * window  #(498,400)
+  return np.abs(np.fft.rfft(windowed_frames, int(fft_length)))  #(498,257)
 
 
 # Mel spectrum constants and functions.
@@ -116,7 +116,7 @@ def spectrogram_to_mel_matrix(num_mel_bins=20,
                               audio_sample_rate=8000,
                               lower_edge_hertz=125.0,
                               upper_edge_hertz=3800.0):
-  """Return a matrix that can post-multiply spectrogram rows to make mel.
+  """Return a matrix that can post-multiply spectrogram rows to make mel.返回一个矩阵，该矩阵可以将多个谱图行进行后期处理以生成mel。
 
   Returns a np.array matrix A that can be used to post-multiply a matrix S of
   spectrogram values (STFT magnitudes) arranged as frames x bins to generate a
@@ -198,26 +198,29 @@ def log_mel_spectrogram(data,
   """Convert waveform to a log magnitude mel-frequency spectrogram.
 
   Args:
-    data: 1D np.array of waveform data.
-    audio_sample_rate: The sampling rate of data.
-    log_offset: Add this to values when taking log to avoid -Infs.
-    window_length_secs: Duration of each window to analyze.
-    hop_length_secs: Advance between successive analysis windows.
+    data: 1D np.array of waveform data.  (80000)
+    audio_sample_rate: The sampling rate of data.  16000
+    log_offset: Add this to values when taking log to avoid -Infs. 0.01
+    window_length_secs: Duration of each window to analyze. 0.025
+    hop_length_secs: Advance between successive analysis windows(连续分析窗口之间的前进). 0.01
+    num_mel_bins   64
+    lower_edge_hertz  125
+    upper_edge_hertz  7500  
     **kwargs: Additional arguments to pass to spectrogram_to_mel_matrix.
 
   Returns:
     2D np.array of (num_frames, num_mel_bins) consisting of log mel filterbank
     magnitudes for successive frames.
   """
-  window_length_samples = int(round(audio_sample_rate * window_length_secs))
-  hop_length_samples = int(round(audio_sample_rate * hop_length_secs))
-  fft_length = 2 ** int(np.ceil(np.log(window_length_samples) / np.log(2.0)))
-  spectrogram = stft_magnitude(
+  window_length_samples = int(round(audio_sample_rate * window_length_secs))  #400
+  hop_length_samples = int(round(audio_sample_rate * hop_length_secs))  #160
+  fft_length = 2 ** int(np.ceil(np.log(window_length_samples) / np.log(2.0)))  #512
+  spectrogram = stft_magnitude(  #magnitude:强度
       data,
       fft_length=fft_length,
       hop_length=hop_length_samples,
-      window_length=window_length_samples)
+      window_length=window_length_samples)  #(498,257)
   mel_spectrogram = np.dot(spectrogram, spectrogram_to_mel_matrix(
       num_spectrogram_bins=spectrogram.shape[1],
-      audio_sample_rate=audio_sample_rate, **kwargs))
+      audio_sample_rate=audio_sample_rate, **kwargs)) #(498,64)
   return np.log(mel_spectrogram + log_offset)
