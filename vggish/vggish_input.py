@@ -44,19 +44,20 @@ def waveform_to_examples(data, sample_rate): # data:(220500)  samplerate: 44140
   if len(data.shape) > 1:
     data = np.mean(data, axis=1)
   # Resample to the rate assumed by VGGish.
-  if sample_rate != vggish_params.SAMPLE_RATE:   # 如果传入的采样率和参数文件中定义的不一致则重新进行采样
-    data = resampy.resample(data, sample_rate, vggish_params.SAMPLE_RATE)
+  if sample_rate != vggish_params.SAMPLE_RATE:   # 如果传入的采样率和参数文件中定义的不一致则重新进行采样  vggish_params.SAMPLE_RATE=16000
+    data = resampy.resample(data, sample_rate, vggish_params.SAMPLE_RATE) #(80000)
 
   # Compute log mel spectrogram features. 生成梅尔频谱特征，细节再看
+  # (498,64)
   log_mel = mel_features.log_mel_spectrogram(
-      data,
-      audio_sample_rate=vggish_params.SAMPLE_RATE,
-      log_offset=vggish_params.LOG_OFFSET,
-      window_length_secs=vggish_params.STFT_WINDOW_LENGTH_SECONDS,
-      hop_length_secs=vggish_params.STFT_HOP_LENGTH_SECONDS,
-      num_mel_bins=vggish_params.NUM_MEL_BINS,
-      lower_edge_hertz=vggish_params.MEL_MIN_HZ,
-      upper_edge_hertz=vggish_params.MEL_MAX_HZ)  # (498,64)
+      data,  #(80000)
+      audio_sample_rate=vggish_params.SAMPLE_RATE,  #(16000) 
+      log_offset=vggish_params.LOG_OFFSET,  #0.01  避免log值陷入负无穷
+      window_length_secs=vggish_params.STFT_WINDOW_LENGTH_SECONDS,  #0.025
+      hop_length_secs=vggish_params.STFT_HOP_LENGTH_SECONDS,   #0.010 hop:跳跃
+      num_mel_bins=vggish_params.NUM_MEL_BINS,  #64
+      lower_edge_hertz=vggish_params.MEL_MIN_HZ,  #125
+      upper_edge_hertz=vggish_params.MEL_MAX_HZ)  #7500  
 
   # Frame features into examples.
   features_sample_rate = 1.0 / vggish_params.STFT_HOP_LENGTH_SECONDS  # 1/0.010
