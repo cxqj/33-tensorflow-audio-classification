@@ -19,7 +19,7 @@ import numpy as np
 
 import vggish_params
 
-
+# 为了和YouTube-8M工程保持兼容应用了后处理
 class Postprocessor(object):
   """Post-processes VGGish embeddings.
 
@@ -40,14 +40,14 @@ class Postprocessor(object):
         contains the PCA parameters used in postprocessing.
     """
     params = np.load(pca_params_npz_path)
-    self._pca_matrix = params[vggish_params.PCA_EIGEN_VECTORS_NAME]
+    self._pca_matrix = params[vggish_params.PCA_EIGEN_VECTORS_NAME]  #'pca_eigen_vectors'
     # Load means into a column vector for easier broadcasting later.
-    self._pca_means = params[vggish_params.PCA_MEANS_NAME].reshape(-1, 1)
+    self._pca_means = params[vggish_params.PCA_MEANS_NAME].reshape(-1, 1) 'pca_means'
     assert self._pca_matrix.shape == (
         vggish_params.EMBEDDING_SIZE, vggish_params.EMBEDDING_SIZE), (
-            'Bad PCA matrix shape: %r' % (self._pca_matrix.shape,))
+            'Bad PCA matrix shape: %r' % (self._pca_matrix.shape,))  #(128,128)
     assert self._pca_means.shape == (vggish_params.EMBEDDING_SIZE, 1), (
-        'Bad PCA means shape: %r' % (self._pca_means.shape,))
+        'Bad PCA means shape: %r' % (self._pca_means.shape,))  #(128,1)
 
   def postprocess(self, embeddings_batch):  # (4,128) 对得到的特征进行PCA降维和8位量化
     """Applies postprocessing to a batch of embeddings.
