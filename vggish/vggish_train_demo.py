@@ -100,9 +100,9 @@ def _get_examples_batch():
   sine = np.sin(2 * np.pi * freq * t)  # (220500)
   # Random constant signal. 常量信号
   magnitude = np.random.uniform(-1, 1)  # 强度
-  const = magnitude * t
+  const = magnitude * t  # (220500)
   # White noise. 白噪声
-  noise = np.random.normal(-1, 1, size=t.shape)
+  noise = np.random.normal(-1, 1, size=t.shape) # (220500)
 
   # Make examples of each signal and corresponding labels.
   # Sine is class index 0, Const class index 1, Noise class index 2.
@@ -122,7 +122,7 @@ def _get_examples_batch():
   shuffle(labeled_examples)
 
   # Separate and return the features and labels.
-  features = [example for (example, _) in labeled_examples]
+  features = [example for (example, _) in labeled_examples]  
   labels = [label for (_, label) in labeled_examples]
   return (features, labels)
 
@@ -185,7 +185,7 @@ def main(_):
 
     # The training loop.
     for _ in range(FLAGS.num_batches):
-      (features, labels) = _get_examples_batch()
+      (features, labels) = _get_examples_batch()  #(15,96,64),(15,3)
       [num_steps, loss, _] = sess.run(
           [global_step_tensor, loss_tensor, train_op],
           feed_dict={features_tensor: features, labels_tensor: labels})
