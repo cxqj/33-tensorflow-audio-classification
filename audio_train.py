@@ -5,7 +5,7 @@ r"""Train audio model."""
 
 from __future__ import print_function
 import sys
-sys.path.append('./audio')
+sys.path.append('./audio')  # audio：Dependencies of training, model and datasets.
 
 import os
 import numpy as np
@@ -16,7 +16,7 @@ import matplotlib.pyplot as plt
 # get_ipython().run_line_magic('matplotlib', 'inline')
 
 import tensorflow as tf
-from tensorflow.python.platform import gfile
+from tensorflow.python.platform import gfile  #提供类似 Python中 的 file 对象的 api，用于文件的打开
 
 import audio_params as params
 import audio_util as util
@@ -24,7 +24,7 @@ from audio_records import RecordsParser
 from audio_model import define_audio_slim
 from audio_feature_extractor import VGGishExtractor
 
-tf.logging.set_verbosity(tf.logging.DEBUG)
+tf.logging.set_verbosity(tf.logging.DEBUG)  # 将日志信息输出到屏幕，日志级别为DEBUG
 
 flags = tf.app.flags
 
@@ -82,7 +82,7 @@ audio_ckpt_dir = os.path.join(FLAGS.audio_ckpt_dir,
 util.maybe_create_directory(tensorboard_dir)
 util.maybe_create_directory(audio_ckpt_dir)
 
-
+# 定义loss函数和优化器
 def _add_triaining_graph():
     with tf.Graph().as_default() as graph:
         logits = define_audio_slim(training=True)  # 分类层
@@ -100,12 +100,12 @@ def _add_triaining_graph():
                                       collections=[tf.GraphKeys.GLOBAL_VARIABLES,
                                                    tf.GraphKeys.GLOBAL_STEP])
             optimizer = tf.train.AdamOptimizer(
-                learning_rate=params.LEARNING_RATE,
-                epsilon=params.ADAM_EPSILON)
+                learning_rate=params.LEARNING_RATE, #1e-5
+                epsilon=params.ADAM_EPSILON) #1e-8
             optimizer.minimize(loss, global_step=global_step, name='train_op')
         return graph
 
-
+# 检查checkpoint是否存在
 def _check_vggish_ckpt_exists():
     """check VGGish checkpoint exists or not."""
     util.maybe_create_directory(FLAGS.vggish_ckpt_dir)
